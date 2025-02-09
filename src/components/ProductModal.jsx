@@ -13,6 +13,7 @@ function ProductModal({
   getProducts,
 }) {
   const [modalData, setModalData] = useState(tempProduct);
+  const [isCloseModal, setIsCloseModal] = useState(true);
 
   useEffect(() => {
     setModalData({
@@ -106,7 +107,7 @@ function ProductModal({
 
   const addProduct = async () => {
     try {
-      await axios.post(`${BASE_URL}/api/${API_PATH}/admin/product`, {
+      const response = await axios.post(`${BASE_URL}/api/${API_PATH}/admin/product`, {
         data: {
           ...modalData,
           origin_price: Number(modalData.origin_price),
@@ -114,6 +115,11 @@ function ProductModal({
           is_enabled: modalData.is_enabled ? 1 : 0,
         },
       });
+
+      if (response.data.success !== true) {
+        setIsCloseModal(false);
+        alert(response.data.message);
+      }
     } catch (error) {
       alert("新增產品失敗");
     }
@@ -121,7 +127,7 @@ function ProductModal({
 
   const updateProduct = async () => {
     try {
-      await axios.put(
+      const response = await axios.put(
         `${BASE_URL}/api/${API_PATH}/admin/product/${modalData.id}`,
         {
           data: {
@@ -132,8 +138,13 @@ function ProductModal({
           },
         }
       );
+
+      if (response.data.success !== true) {
+        setIsCloseModal(false);
+        alert(response.data.message);
+      }
     } catch (error) {
-      alert("新增產品失敗");
+      alert("編輯產品失敗");
     }
   };
 
@@ -143,8 +154,11 @@ function ProductModal({
     try {
       await apiCall();
 
-      getProducts();
-      hdlCloseProductModal();
+      console.log(isCloseModal);
+      if (isCloseModal === true) {
+        getProducts();
+        hdlCloseProductModal();
+      }
     } catch (error) {
       alert("更新產品失敗");
     }
@@ -318,6 +332,7 @@ function ProductModal({
                       name="origin_price"
                       id="origin_price"
                       type="number"
+                      min="0"
                       className="form-control"
                       placeholder="請輸入原價"
                     />
@@ -332,6 +347,7 @@ function ProductModal({
                       name="price"
                       id="price"
                       type="number"
+                      min="0"
                       className="form-control"
                       placeholder="請輸入售價"
                     />
